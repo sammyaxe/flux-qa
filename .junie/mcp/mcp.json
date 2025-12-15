@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/Users/aidaskeburys/Library/Application Support/Herd/bin/php83",
+            "args": [
+                "/Users/aidaskeburys/PhpstormProjects/flux-qa/fluxqa/artisan",
+                "boost:mcp"
+            ]
+        },
+        "herd": {
+            "command": "/Users/aidaskeburys/Library/Application Support/Herd/bin/php83",
+            "args": [
+                "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+            ],
+            "env": {
+                "SITE_PATH": "/Users/aidaskeburys/PhpstormProjects/flux-qa/fluxqa"
+            }
+        }
+    }
+}
