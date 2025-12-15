@@ -27,6 +27,9 @@
                 <flux:navbar.item icon="home" href="{{ route('index') }}" :current="request()->routeIs('index')">
                     Home
                 </flux:navbar.item>
+                <flux:navbar.item icon="code-bracket" href="https://github.com/sammyaxe/flux-qa" target="_blank">
+                    GitHub
+                </flux:navbar.item>
             </flux:navbar>
         </flux:header>
 
