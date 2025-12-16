@@ -11,7 +11,13 @@ new
 class extends Component
 {
     #[Url]
-    public ?string $accordion = null;
+    public bool $refund = false;
+
+    #[Url]
+    public bool $discounts = false;
+
+    #[Url]
+    public bool $tracking = false;
 
     #[Url]
     public ?string $tab = 'account';
@@ -26,46 +32,53 @@ class extends Component
     </div>
 
     <flux:heading size="xl">Accordion State Control</flux:heading>
-    <flux:subheading class="mt-2">Feature Request: Allow controlling accordion open/close state via Livewire</flux:subheading>
+    <flux:subheading class="mt-2">Bug: Accordion doesn't respect initial state from URL parameters</flux:subheading>
 
     <flux:separator class="my-8" />
 
     <flux:heading size="lg">The Problem</flux:heading>
     <flux:text class="mt-2">
-        Currently, Flux accordion does not support <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model</code> binding, 
-        making it impossible to control which accordion item is open via Livewire state. This prevents common use cases like:
+        Flux accordion supports <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model.self</code> on individual accordion items
+        to bind their open/close state. However, the component doesn't respect the initial state when the model is bound to URL parameters.
     </flux:text>
-    <ul class="mt-4 ml-6 list-disc space-y-2 text-zinc-600 dark:text-zinc-400">
-        <li>Pre-opening a specific accordion item on page load</li>
-        <li>Syncing accordion state to URL using <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">#[Url]</code> attribute</li>
-        <li>Programmatically opening/closing accordion items from Livewire actions</li>
-        <li>Deep linking to a specific FAQ answer</li>
-    </ul>
+
+    <flux:callout icon="exclamation-triangle" variant="warning" class="mt-4">
+        <flux:callout.heading>Try this:</flux:callout.heading>
+        <flux:callout.text>
+            <ol class="list-decimal ml-4 space-y-1">
+                <li>Click on an accordion item below — notice the URL updates</li>
+                <li>Copy the URL with the parameter (e.g., <code class="px-1 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-xs">?refund=true</code>)</li>
+                <li>Open a new tab and paste that URL</li>
+                <li><strong>Bug:</strong> The accordion item should be open, but it's not</li>
+            </ol>
+        </flux:callout.text>
+    </flux:callout>
 
     <flux:separator class="my-8" />
 
-    <flux:heading size="lg">Current Accordion (No State Control)</flux:heading>
+    <flux:heading size="lg">Accordion with wire:model.self</flux:heading>
     <flux:text class="mt-2 mb-4">
-        This accordion works, but there's no way to control its state from Livewire:
+        Each accordion item is bound to a Livewire property with <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">#[Url]</code>.
+        State changes sync to URL, but initial state from URL is ignored:
     </flux:text>
 
-    <flux:card class="mb-8">
+    <flux:card class="mb-4">
         <flux:accordion>
-            <flux:accordion.item>
+            <flux:accordion.item wire:model.self="refund">
                 <flux:accordion.heading>What's your refund policy?</flux:accordion.heading>
                 <flux:accordion.content>
                     If you are not satisfied with your purchase, we offer a 30-day money-back guarantee.
                 </flux:accordion.content>
             </flux:accordion.item>
 
-            <flux:accordion.item>
+            <flux:accordion.item wire:model.self="discounts">
                 <flux:accordion.heading>Do you offer discounts for bulk purchases?</flux:accordion.heading>
                 <flux:accordion.content>
                     Yes, we offer special discounts for bulk orders. Please reach out to our sales team.
                 </flux:accordion.content>
             </flux:accordion.item>
 
-            <flux:accordion.item>
+            <flux:accordion.item wire:model.self="tracking">
                 <flux:accordion.heading>How do I track my order?</flux:accordion.heading>
                 <flux:accordion.content>
                     Once your order is shipped, you will receive an email with a tracking number.
@@ -74,47 +87,71 @@ class extends Component
         </flux:accordion>
     </flux:card>
 
-    <flux:separator class="my-8" />
-
-    <flux:heading size="lg">How Flux Tabs Handle This</flux:heading>
-    <flux:text class="mt-2 mb-4">
-        Flux tabs support <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model</code>, allowing state control. 
-        Try changing tabs - notice the URL updates with <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">?tab=...</code>:
-    </flux:text>
-
     <flux:card class="mb-8">
-        <flux:tabs wire:model="tab">
-            <flux:tab name="account">Account</flux:tab>
-            <flux:tab name="security">Security</flux:tab>
-            <flux:tab name="billing">Billing</flux:tab>
-        </flux:tabs>
-
-        <div class="mt-4">
-            <flux:text class="text-sm">
-                Current tab value: <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded">{{ $tab }}</code>
-            </flux:text>
+        <flux:heading size="sm" class="mb-2">Current State (from Livewire)</flux:heading>
+        <div class="flex flex-wrap gap-2">
+            <flux:badge :color="$refund ? 'lime' : 'zinc'">refund: {{ $refund ? 'true' : 'false' }}</flux:badge>
+            <flux:badge :color="$discounts ? 'lime' : 'zinc'">discounts: {{ $discounts ? 'true' : 'false' }}</flux:badge>
+            <flux:badge :color="$tracking ? 'lime' : 'zinc'">tracking: {{ $tracking ? 'true' : 'false' }}</flux:badge>
         </div>
     </flux:card>
 
     <flux:separator class="my-8" />
 
-    <flux:heading size="lg">Proposed Solution</flux:heading>
+    <flux:heading size="lg">How Flux Tabs Handle This (Correctly)</flux:heading>
     <flux:text class="mt-2 mb-4">
-        Accordion should support the same pattern as tabs, with support for both <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">string</code> (single item) 
-        and <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">array</code> (multiple items) types:
+        Flux tabs support <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model</code> and correctly respect initial state from URL.
+        Try visiting <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">?tab=billing</code> — the Billing tab will be selected:
     </flux:text>
 
-    <flux:heading size="base" class="mt-6 mb-3">Single Item Open (string)</flux:heading>
-    <flux:card class="mb-6">
-        <pre class="text-sm overflow-x-auto"><code class="text-zinc-600 dark:text-zinc-300">&lt;!-- Single item mode (default) --&gt;
-&lt;flux:accordion wire:model="accordion"&gt;
-    &lt;flux:accordion.item name="refund"&gt;
-        &lt;flux:accordion.heading&gt;What's your refund policy?&lt;/flux:accordion.heading&gt;
-        &lt;flux:accordion.content&gt;...&lt;/flux:accordion.content&gt;
-    &lt;/flux:accordion.item&gt;
+    <flux:card class="mb-4">
+        <flux:tabs wire:model="tab">
+            <flux:tab name="account">Account</flux:tab>
+            <flux:tab name="security">Security</flux:tab>
+            <flux:tab name="billing">Billing</flux:tab>
+        </flux:tabs>
+    </flux:card>
 
-    &lt;flux:accordion.item name="discounts"&gt;
-        &lt;flux:accordion.heading&gt;Do you offer discounts?&lt;/flux:accordion.heading&gt;
+    <flux:card class="mb-8">
+        <flux:heading size="sm" class="mb-2">Current State</flux:heading>
+        <flux:badge :color="$tab ? 'lime' : 'zinc'">tab: {{ $tab }}</flux:badge>
+    </flux:card>
+
+    <flux:separator class="my-8" />
+
+    <flux:heading size="lg">Test Links</flux:heading>
+    <flux:text class="mt-2 mb-4">
+        Click these links to test initial state behavior. The accordion should open to the specified item:
+    </flux:text>
+
+    <div class="flex flex-wrap gap-3 mb-8">
+        <flux:button variant="outline" href="{{ route('examples.accordion-state', ['refund' => 'true']) }}">
+            Open Refund
+        </flux:button>
+        <flux:button variant="outline" href="{{ route('examples.accordion-state', ['discounts' => 'true']) }}">
+            Open Discounts
+        </flux:button>
+        <flux:button variant="outline" href="{{ route('examples.accordion-state', ['refund' => 'true', 'tracking' => 'true']) }}">
+            Open Refund + Tracking
+        </flux:button>
+        <flux:button variant="outline" href="{{ route('examples.accordion-state', ['tab' => 'billing']) }}">
+            Tab: Billing (works ✓)
+        </flux:button>
+    </div>
+
+    <flux:separator class="my-8" />
+
+    <flux:heading size="lg">Expected Fix</flux:heading>
+    <flux:text class="mt-2 mb-4">
+        The accordion component should check the initial value of <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model.self</code>
+        on mount and set its expanded state accordingly, just like tabs do with <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">wire:model</code>.
+    </flux:text>
+
+    <flux:card>
+        <pre class="text-sm overflow-x-auto"><code class="text-zinc-600 dark:text-zinc-300">&lt;!-- Current usage (state changes work, initial state doesn't) --&gt;
+&lt;flux:accordion&gt;
+    &lt;flux:accordion.item wire:model.self="refund"&gt;
+        &lt;flux:accordion.heading&gt;Refund Policy&lt;/flux:accordion.heading&gt;
         &lt;flux:accordion.content&gt;...&lt;/flux:accordion.content&gt;
     &lt;/flux:accordion.item&gt;
 &lt;/flux:accordion&gt;
@@ -122,44 +159,20 @@ class extends Component
 &lt;!-- Livewire Component --&gt;
 &lt;?php
 #[Url]
-public ?string $accordion = 'refund'; // Pre-opens "refund" item
-?&gt;</code></pre>
-    </flux:card>
+public bool $refund = false;
 
-    <flux:heading size="base" class="mt-6 mb-3">Multiple Items Open (array)</flux:heading>
-    <flux:text class="mb-3 text-sm text-zinc-600 dark:text-zinc-400">
-        For accordions that allow multiple items open simultaneously (e.g., FAQ sections, settings panels):
-    </flux:text>
-    <flux:card>
-        <pre class="text-sm overflow-x-auto"><code class="text-zinc-600 dark:text-zinc-300">&lt;!-- Multiple items mode --&gt;
-&lt;flux:accordion wire:model="accordion" multiple&gt;
-    &lt;flux:accordion.item name="refund"&gt;
-        &lt;flux:accordion.heading&gt;What's your refund policy?&lt;/flux:accordion.heading&gt;
-        &lt;flux:accordion.content&gt;...&lt;/flux:accordion.content&gt;
-    &lt;/flux:accordion.item&gt;
-
-    &lt;flux:accordion.item name="discounts"&gt;
-        &lt;flux:accordion.heading&gt;Do you offer discounts?&lt;/flux:accordion.heading&gt;
-        &lt;flux:accordion.content&gt;...&lt;/flux:accordion.content&gt;
-    &lt;/flux:accordion.item&gt;
-
-    &lt;flux:accordion.item name="tracking"&gt;
-        &lt;flux:accordion.heading&gt;How do I track my order?&lt;/flux:accordion.heading&gt;
-        &lt;flux:accordion.content&gt;...&lt;/flux:accordion.content&gt;
-    &lt;/flux:accordion.item&gt;
-&lt;/flux:accordion&gt;
-
-&lt;!-- Livewire Component --&gt;
-&lt;?php
-#[Url(as: 'open')]
-public array $accordion = ['refund', 'tracking']; // Pre-opens multiple items
+// When visiting ?refund=true, the accordion item should be open
+// Currently: it stays closed (bug)
+// Expected: it opens automatically
 ?&gt;</code></pre>
     </flux:card>
 
     <flux:callout icon="light-bulb" class="mt-6">
-        <flux:callout.heading>URL Format for Arrays</flux:callout.heading>
+        <flux:callout.heading>Implementation Note</flux:callout.heading>
         <flux:callout.text>
-            With array binding, the URL would look like: <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">?open[]=refund&open[]=tracking</code>
+            The Alpine component for <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">flux:accordion.item</code> likely initializes
+            its <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">expanded</code> state before Livewire entanglement syncs the value.
+            The fix would be to read the initial entangled value during Alpine's <code class="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 rounded text-sm">init()</code>.
         </flux:callout.text>
     </flux:callout>
 </div>
